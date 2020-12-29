@@ -1,6 +1,5 @@
 package com.chaos.aol.info
 
-import android.os.Build
 import com.chaos.aol.extensions.getSafeName
 import com.chaos.aol.vm.VirtualMachine
 import com.chaos.aol.vm.Vm
@@ -21,7 +20,8 @@ class InstanceLayout private constructor(
         val sw = StringWriter()
         val pw = PrintWriter(sw)
 
-        val MSG_HEADER = "(object header)"
+        val paddingDesc = "(alignment/padding gap)"
+        val nextGapDesc = "(loss due to the next object alignment)"
 
         var maxTypeLen = "TYPE".length
         for (f in fields) {
@@ -29,16 +29,15 @@ class InstanceLayout private constructor(
         }
         maxTypeLen += 2
 
-        var maxDescrLen = MSG_HEADER.length
+        var maxDescLen = max(paddingDesc.length, nextGapDesc.length)
         for (f in fields) {
-            maxDescrLen = max(f.name.length, maxDescrLen)
+            maxDescLen = max(f.name.length, maxDescLen)
         }
-        maxDescrLen += 2
+        maxDescLen += 2
 
-        pw.println("Android " + Build.VERSION.SDK_INT)
         pw.println(classData.name + " object internals:")
         pw.printf(
-            " %6s %5s %" + maxTypeLen + "s %-" + maxDescrLen + "s %s%n",
+            " %6s %5s %" + maxTypeLen + "s %-" + maxDescLen + "s %s%n",
             "OFFSET",
             "SIZE",
             "TYPE",
@@ -46,7 +45,7 @@ class InstanceLayout private constructor(
             "VALUE"
         )
         pw.printf(
-            " %6d %5d %" + maxTypeLen + "s %-" + maxDescrLen + "s %s%n",
+            " %6d %5d %" + maxTypeLen + "s %-" + maxDescLen + "s %s%n",
             0,
             classData.headerSize,
             "",
@@ -54,23 +53,52 @@ class InstanceLayout private constructor(
             "N/A"
         )
 
+        var nextFree: Long = classData.headerSize.toLong()
+
+        var interLoss: Long = 0
+        var exterLoss: Long = 0
+
         for (f in fields) {
+            if (f.offset > nextFree) {
+                pw.printf(
+                    " %6d %5d %${maxTypeLen}s %-${maxDescLen}s%n",
+                    nextFree,
+                    f.offset - nextFree,
+                    "",
+                    paddingDesc
+                )
+                interLoss += f.offset - nextFree
+            }
             pw.printf(
-                " %6d %5d %" + maxTypeLen + "s %-" + maxDescrLen + "s %s%n",
+                " %6d %5d %${maxTypeLen}s %-${maxDescLen}s %s%n",
                 f.offset,
                 f.size,
                 f.type,
                 f.name,
                 "N/A"
             )
+            nextFree = f.offset + f.size
         }
 
         val sizeOf: Long = instanceSize
-        if (sizeOf == VirtualMachine.UNKNOWN_SIZE.toLong()) {
-            pw.printf("Instance size: <Unknown>")
-        } else {
-            pw.printf("Instance size: %d bytes%n", sizeOf)
+        if (sizeOf != nextFree) {
+            exterLoss = sizeOf - nextFree
+            pw.printf(" %6d %5s %${maxTypeLen}s %s%n", nextFree, exterLoss, "", nextGapDesc)
         }
+
+        pw.printf("Instance size: ")
+        if (sizeOf == VirtualMachine.UNKNOWN_SIZE.toLong()) {
+            pw.printf("<Unknown>")
+        } else {
+            pw.printf("%d bytes", sizeOf)
+        }
+        pw.println()
+        pw.printf(
+            "Space losses: %d bytes internal + %d bytes external = %d bytes total%n",
+            interLoss,
+            exterLoss,
+            interLoss + exterLoss
+        )
 
         pw.close()
 
