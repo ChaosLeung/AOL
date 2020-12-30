@@ -1,5 +1,6 @@
 package com.chaos.aol.info
 
+import android.util.Log
 import com.chaos.aol.extensions.getSafeName
 import com.chaos.aol.utils.ObjectUtils
 import com.chaos.aol.vm.VirtualMachine
@@ -17,10 +18,31 @@ class InstanceLayout private constructor(
     private val instanceSize: Long
 ) {
 
-    fun toPrintable(): String {
+    fun toReadableString(): String {
         val sw = StringWriter()
         val pw = PrintWriter(sw)
 
+        dump(pw)
+
+        pw.close()
+
+        return sw.toString()
+    }
+
+    fun dumpToLog(priority: Int = Log.DEBUG, tag: String = TAG) {
+        toReadableString().split('\n').forEach {
+            when (priority) {
+                Log.VERBOSE -> Log.v(tag, it)
+                Log.DEBUG -> Log.d(tag, it)
+                Log.INFO -> Log.i(tag, it)
+                Log.WARN -> Log.w(tag, it)
+                Log.ERROR -> Log.e(tag, it)
+                else -> Log.d(tag, it)
+            }
+        }
+    }
+
+    fun dump(pw: PrintWriter) {
         val paddingDesc = "(alignment/padding gap)"
         val nextGapDesc = "(loss due to the next object alignment)"
         val objHeaderDesc = "(object header)"
@@ -39,7 +61,7 @@ class InstanceLayout private constructor(
 
         pw.println("${classData.name} object internals:")
         pw.printf(
-            " %6s %5s %${maxTypeLen}s %-${maxDescLen}s %s%n",
+            " %6s %5s %${maxTypeLen}s  %-${maxDescLen}s %s%n",
             "OFFSET",
             "SIZE",
             "TYPE",
@@ -48,12 +70,13 @@ class InstanceLayout private constructor(
         )
 
         val vm = Vm.get()
-
         val instance = instanceRef.get()
+
+        val commonFormat = " %6d %5d %${maxTypeLen}s  %-${maxDescLen}s %s%n"
 
         if (instance == null) {
             pw.printf(
-                " %6d %5d %${maxTypeLen}s %-${maxDescLen}s %s%n",
+                commonFormat,
                 0,
                 classData.headerSize,
                 "",
@@ -64,7 +87,7 @@ class InstanceLayout private constructor(
             for (offset in 0 until classData.headerSize step Int.SIZE_BYTES) {
                 val word = vm.getInt(instance, offset.toLong())
                 pw.printf(
-                    " %6d %5d %${maxTypeLen}s %-${maxDescLen}s %s%n",
+                    commonFormat,
                     offset,
                     Int.SIZE_BYTES,
                     "",
@@ -82,16 +105,17 @@ class InstanceLayout private constructor(
         for (f in fields) {
             if (f.offset > nextFree) {
                 pw.printf(
-                    " %6d %5d %${maxTypeLen}s %-${maxDescLen}s%n",
+                    commonFormat,
                     nextFree,
                     f.offset - nextFree,
                     "",
-                    paddingDesc
+                    paddingDesc,
+                    ""
                 )
                 interLoss += f.offset - nextFree
             }
             pw.printf(
-                " %6d %5d %${maxTypeLen}s %-${maxDescLen}s %s%n",
+                commonFormat,
                 f.offset,
                 f.size,
                 f.type,
@@ -108,7 +132,7 @@ class InstanceLayout private constructor(
         if (sizeOf != nextFree) {
             exterLoss = sizeOf - nextFree
             pw.printf(
-                " %6d %5s %${maxTypeLen}s %s%n",
+                " %6d %5s %${maxTypeLen}s  %s%n",
                 nextFree,
                 exterLoss,
                 "",
@@ -129,10 +153,6 @@ class InstanceLayout private constructor(
             exterLoss,
             interLoss + exterLoss
         )
-
-        pw.close()
-
-        return sw.toString()
     }
 
     private fun Int.toBinaryString(): String {
@@ -157,6 +177,8 @@ class InstanceLayout private constructor(
     }
 
     companion object {
+
+        private const val TAG = "InstanceLayout"
 
         fun parseInstance(instance: Any): InstanceLayout {
             val vm = Vm.get()
