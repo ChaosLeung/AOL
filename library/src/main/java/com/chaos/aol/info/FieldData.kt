@@ -6,12 +6,28 @@ import java.lang.reflect.Field
 
 class FieldData private constructor(
     val ref: Field?,
-    val name: String,
+    name: String,
     val type: String,
-    val declaringClass: String,
+    declaringClass: String,
     val offset: Long,
     val size: Long = -1
 ) : Comparable<FieldData> {
+
+    val name: String
+
+    init {
+        val isArray = declaringClass.startsWith("[")
+        this.name = if (isArray) {
+            name
+        } else {
+            val idx = declaringClass.lastIndexOf(".")
+            if (idx != -1) {
+                "${declaringClass.substring(idx + 1)}.$name"
+            } else {
+                "$declaringClass.$name"
+            }
+        }
+    }
 
     override fun compareTo(other: FieldData): Int {
         return offset.compareTo(other.offset)

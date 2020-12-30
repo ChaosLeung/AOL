@@ -31,13 +31,13 @@ class InstanceLayout private constructor(
         }
         maxTypeLen += 2
 
-        var maxDescLen = max(paddingDesc.length, nextGapDesc.length)
+        var maxDescLen = nextGapDesc.length
         for (f in fields) {
             maxDescLen = max(f.name.length, maxDescLen)
         }
         maxDescLen += 2
 
-        pw.println(classData.name + " object internals:")
+        pw.println("${classData.name} object internals:")
         pw.printf(
             " %6s %5s %${maxTypeLen}s %-${maxDescLen}s %s%n",
             "OFFSET",
