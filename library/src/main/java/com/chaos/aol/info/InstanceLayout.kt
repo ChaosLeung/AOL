@@ -23,6 +23,7 @@ class InstanceLayout private constructor(
 
         val paddingDesc = "(alignment/padding gap)"
         val nextGapDesc = "(loss due to the next object alignment)"
+        val objHeaderDesc = "(object header)"
 
         var maxTypeLen = "TYPE".length
         for (f in fields) {
@@ -56,23 +57,19 @@ class InstanceLayout private constructor(
                 0,
                 classData.headerSize,
                 "",
-                "(object header)",
+                objHeaderDesc,
                 "N/A"
             )
         } else {
-            for (offset in 0 until classData.headerSize.toLong() step 4) {
-                val word = vm.getInt(instance, offset)
+            for (offset in 0 until classData.headerSize step Int.SIZE_BYTES) {
+                val word = vm.getInt(instance, offset.toLong())
                 pw.printf(
-                    " %6d %5d %${+maxTypeLen}s %-${maxDescLen}s %s%n", offset, 4, "", "(object header)",
-                    toHex(word shr 0 and 0xFF) +
-                            " ${toHex(word shr 8 and 0xFF)}" +
-                            " ${toHex(word shr 16 and 0xFF)}" +
-                            " ${toHex(word shr 24 and 0xFF)}" +
-                            " (${toBinary(word shr 0 and 0xFF)}" +
-                            " ${toBinary(word shr 8 and 0xFF)}" +
-                            " ${toBinary(word shr 16 and 0xFF)}" +
-                            " ${toBinary(word shr 24 and 0xFF)})" +
-                            " ($word)"
+                    " %6d %5d %${maxTypeLen}s %-${maxDescLen}s %s%n",
+                    offset,
+                    Int.SIZE_BYTES,
+                    "",
+                    objHeaderDesc,
+                    "${word.toHexString()} (${word.toBinaryString()}) (${word})"
                 )
             }
         }
@@ -110,7 +107,13 @@ class InstanceLayout private constructor(
         val sizeOf: Long = instanceSize
         if (sizeOf != nextFree) {
             exterLoss = sizeOf - nextFree
-            pw.printf(" %6d %5s %${maxTypeLen}s %s%n", nextFree, exterLoss, "", nextGapDesc)
+            pw.printf(
+                " %6d %5s %${maxTypeLen}s %s%n",
+                nextFree,
+                exterLoss,
+                "",
+                nextGapDesc
+            )
         }
 
         pw.printf("Instance size: ")
@@ -132,22 +135,25 @@ class InstanceLayout private constructor(
         return sw.toString()
     }
 
-    private fun toBinary(x: Int): String {
-        var s = Integer.toBinaryString(x)
-        val deficit = 8 - s.length
-        for (c in 0 until deficit) {
-            s = "0$s"
-        }
-        return s
+    private fun Int.toBinaryString(): String {
+        val step = Int.SIZE_BITS / Int.SIZE_BYTES
+        return Integer.toBinaryString(this).padStart(Int.SIZE_BITS, '0').insert(step, step, ' ')
     }
 
-    private fun toHex(x: Int): String {
-        var s = Integer.toHexString(x)
-        val deficit = 2 - s.length
-        for (c in 0 until deficit) {
-            s = "0$s"
+    private fun Int.toHexString(): String {
+        return Integer.toHexString(this).padStart(Int.SIZE_BITS / Int.SIZE_BYTES, '0').insert(2, 2, ' ')
+    }
+
+    private fun String.insert(start: Int = 0, step: Int = 1, ch: Char = ' '): String {
+        if (start < 0 || step < 1) {
+            return this
         }
-        return s
+        val sb = StringBuilder(this)
+        val counts: Int = (length - start) / step
+        for (i in 0 until counts) {
+            sb.insert(i + start + i * step, ch)
+        }
+        return sb.toString()
     }
 
     companion object {
