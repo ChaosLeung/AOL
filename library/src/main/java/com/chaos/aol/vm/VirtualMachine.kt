@@ -23,6 +23,6 @@ interface VirtualMachine {
     fun getInt(obj: Any, offset: Long): Int
 
     companion object {
-        val UNKNOWN_SIZE: Int = -1
+        const val UNKNOWN_SIZE: Int = -1
     }
 }

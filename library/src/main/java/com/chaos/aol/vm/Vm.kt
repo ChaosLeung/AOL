@@ -1,14 +1,9 @@
 package com.chaos.aol.vm
 
-class Vm {
-    companion object {
-        private val INSTANCE: VirtualMachine by lazy {
-            ReflectUnsafe
-        }
+object Vm {
+    private val INSTANCE: VirtualMachine by lazy { Art }
 
-        @JvmStatic
-        fun get(): VirtualMachine {
-            return INSTANCE
-        }
+    fun get(): VirtualMachine {
+        return INSTANCE
     }
 }

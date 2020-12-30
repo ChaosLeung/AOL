@@ -3,7 +3,7 @@ package com.chaos.aol.info
 import com.chaos.aol.vm.Vm
 import java.lang.reflect.Modifier
 
-open class ClassData internal constructor(
+class ClassData internal constructor(
     val name: String,
     fields: List<FieldData> = emptyList(),
     val headerSize: Int = Vm.get().objectHeaderSize(),

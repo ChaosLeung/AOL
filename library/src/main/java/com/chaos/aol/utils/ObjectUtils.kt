@@ -10,14 +10,14 @@ object ObjectUtils {
             throw IllegalArgumentException("${clazz.name} should be an array class")
         }
         return when (clazz) {
-            ByteArray::class.javaPrimitiveType -> (obj as ByteArray).size
-            BooleanArray::class.javaPrimitiveType -> (obj as BooleanArray).size
-            CharArray::class.javaPrimitiveType -> (obj as CharArray).size
-            ShortArray::class.javaPrimitiveType -> (obj as ShortArray).size
-            IntArray::class.javaPrimitiveType -> (obj as IntArray).size
-            FloatArray::class.javaPrimitiveType -> (obj as FloatArray).size
-            LongArray::class.javaPrimitiveType -> (obj as LongArray).size
-            DoubleArray::class.javaPrimitiveType -> (obj as DoubleArray).size
+            ByteArray::class.java -> (obj as ByteArray).size
+            BooleanArray::class.java -> (obj as BooleanArray).size
+            CharArray::class.java -> (obj as CharArray).size
+            ShortArray::class.java -> (obj as ShortArray).size
+            IntArray::class.java -> (obj as IntArray).size
+            FloatArray::class.java -> (obj as FloatArray).size
+            LongArray::class.java -> (obj as LongArray).size
+            DoubleArray::class.java -> (obj as DoubleArray).size
             else -> (obj as Array<*>).size
         }
     }
@@ -60,6 +60,7 @@ object ObjectUtils {
 
     fun value(o: Any, f: Field): Any? {
         val t: Class<*> = f.type
+        f.isAccessible = true
         if (!t.isPrimitive) {
             return f.get(o)
         }
