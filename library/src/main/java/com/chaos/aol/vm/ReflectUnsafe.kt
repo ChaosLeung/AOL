@@ -1,6 +1,6 @@
 package com.chaos.aol.vm
 
-import com.chaos.aol.utils.ArrayUtils
+import com.chaos.aol.utils.ObjectUtils
 import java.lang.reflect.Field
 
 internal class ReflectUnsafe {
@@ -12,7 +12,7 @@ internal class ReflectUnsafe {
         private val HEADER_SIZE: Int = sizeOfObject(Any()).toInt()
 
         override fun sizeOfObject(obj: Any): Long {
-            val clazz = obj::class.java
+            val clazz = obj.javaClass
             if (clazz.isArray) {
                 return sizeOfArrayObject(obj)
             }
@@ -20,13 +20,13 @@ internal class ReflectUnsafe {
         }
 
         override fun sizeOfArrayObject(obj: Any): Long {
-            val clazz = obj::class.java
+            val clazz = obj.javaClass
             if (!clazz.isArray) {
                 throw IllegalArgumentException("class '${clazz.name}' of object '$obj' should be an array class")
             }
 
             val headerSize = Unsafe.arrayBaseOffset(clazz)
-            val contentSize = Unsafe.arrayIndexScale(clazz).toLong() * ArrayUtils.getArrayLength(obj)
+            val contentSize = Unsafe.arrayIndexScale(clazz).toLong() * ObjectUtils.arrayLength(obj)
             return headerSize + contentSize
         }
 
@@ -35,11 +35,11 @@ internal class ReflectUnsafe {
         private fun sizeOfType(clazz: Class<*>): Int {
             // code from ComponentSize method which in art/libdexfile/dex/primitive.h
             return when (clazz) {
-                Void::class.java -> 0
-                Byte::class.java, Boolean::class.java -> 1
-                Char::class.java, Short::class.java -> 2
-                Int::class.java, Float::class.java -> 4
-                Long::class.java, Double::class.java -> 8
+                Void::class.javaPrimitiveType -> 0
+                Byte::class.javaPrimitiveType, Boolean::class.javaPrimitiveType -> 1
+                Char::class.javaPrimitiveType, Short::class.javaPrimitiveType -> 2
+                Int::class.javaPrimitiveType, Float::class.javaPrimitiveType -> 4
+                Long::class.javaPrimitiveType, Double::class.javaPrimitiveType -> 8
                 // static constexpr size_t kObjectReferenceSize = 4;
                 else -> 4
             }
@@ -60,13 +60,15 @@ internal class ReflectUnsafe {
             return Unsafe.arrayBaseOffset(clazz)
         }
 
+        override fun getInt(obj: Any, offset: Long): Int = Unsafe.getInt(obj, offset)
+
         fun guessArrayObjectSize(obj: Any): Long {
-            val clazz = obj::class.java
+            val clazz = obj.javaClass
             if (!clazz.isArray) {
                 throw IllegalArgumentException("${clazz.name} should be an array class")
             }
 
-            val arrayLength = ArrayUtils.getArrayLength(obj)
+            val arrayLength = ObjectUtils.arrayLength(obj)
 
             val headerSize = guessArrayHeaderSize(clazz)
             val contentSize = arrayLength.toLong() * sizeOfType(clazz.componentType!!)

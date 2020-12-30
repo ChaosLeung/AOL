@@ -20,6 +20,8 @@ interface VirtualMachine {
 
     fun arrayHeaderSize(clazz: Class<*>): Int
 
+    fun getInt(obj: Any, offset: Long): Int
+
     companion object {
         val UNKNOWN_SIZE: Int = -1
     }

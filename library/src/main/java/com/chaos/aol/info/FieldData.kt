@@ -5,6 +5,7 @@ import com.chaos.aol.vm.Vm
 import java.lang.reflect.Field
 
 class FieldData private constructor(
+    val ref: Field?,
     val name: String,
     val type: String,
     val declaringClass: String,
@@ -23,6 +24,7 @@ class FieldData private constructor(
     companion object {
         fun parse(field: Field): FieldData {
             return FieldData(
+                field,
                 field.name,
                 field.type.getSafeName(),
                 field.declaringClass.getSafeName(),
@@ -32,7 +34,7 @@ class FieldData private constructor(
         }
 
         fun create(fieldName: String, fieldType: String, declaringClass: String, offset: Long, size: Long): FieldData {
-            return FieldData(fieldName, fieldType, declaringClass, offset, size)
+            return FieldData(null, fieldName, fieldType, declaringClass, offset, size)
         }
     }
 }

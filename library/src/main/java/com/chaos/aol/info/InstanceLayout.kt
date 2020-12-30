@@ -1,6 +1,7 @@
 package com.chaos.aol.info
 
 import com.chaos.aol.extensions.getSafeName
+import com.chaos.aol.utils.ObjectUtils
 import com.chaos.aol.vm.VirtualMachine
 import com.chaos.aol.vm.Vm
 import java.io.PrintWriter
@@ -10,7 +11,7 @@ import java.util.*
 import kotlin.math.max
 
 class InstanceLayout private constructor(
-    private val instance: WeakReference<Any?>,
+    private val instanceRef: WeakReference<Any?>,
     private val classData: ClassData,
     private val fields: List<FieldData>,
     private val instanceSize: Long
@@ -37,23 +38,46 @@ class InstanceLayout private constructor(
 
         pw.println(classData.name + " object internals:")
         pw.printf(
-            " %6s %5s %" + maxTypeLen + "s %-" + maxDescLen + "s %s%n",
+            " %6s %5s %${maxTypeLen}s %-${maxDescLen}s %s%n",
             "OFFSET",
             "SIZE",
             "TYPE",
             "DESCRIPTION",
             "VALUE"
         )
-        pw.printf(
-            " %6d %5d %" + maxTypeLen + "s %-" + maxDescLen + "s %s%n",
-            0,
-            classData.headerSize,
-            "",
-            "(object header)",
-            "N/A"
-        )
 
-        var nextFree: Long = classData.headerSize.toLong()
+        val vm = Vm.get()
+
+        val instance = instanceRef.get()
+
+        if (instance == null) {
+            pw.printf(
+                " %6d %5d %${maxTypeLen}s %-${maxDescLen}s %s%n",
+                0,
+                classData.headerSize,
+                "",
+                "(object header)",
+                "N/A"
+            )
+        } else {
+            for (offset in 0 until classData.headerSize.toLong() step 4) {
+                val word = vm.getInt(instance, offset)
+                pw.printf(
+                    " %6d %5d %${+maxTypeLen}s %-${maxDescLen}s %s%n", offset, 4, "", "(object header)",
+                    toHex(word shr 0 and 0xFF) +
+                            " ${toHex(word shr 8 and 0xFF)}" +
+                            " ${toHex(word shr 16 and 0xFF)}" +
+                            " ${toHex(word shr 24 and 0xFF)}" +
+                            " (${toBinary(word shr 0 and 0xFF)}" +
+                            " ${toBinary(word shr 8 and 0xFF)}" +
+                            " ${toBinary(word shr 16 and 0xFF)}" +
+                            " ${toBinary(word shr 24 and 0xFF)})" +
+                            " ($word)"
+                )
+            }
+        }
+
+        var nextFree = classData.headerSize.toLong()
 
         var interLoss: Long = 0
         var exterLoss: Long = 0
@@ -75,7 +99,10 @@ class InstanceLayout private constructor(
                 f.size,
                 f.type,
                 f.name,
-                "N/A"
+                if (instance == null || f.ref == null)
+                    "N/A"
+                else
+                    ObjectUtils.valueString(ObjectUtils.value(instance, f.ref))
             )
             nextFree = f.offset + f.size
         }
@@ -105,6 +132,24 @@ class InstanceLayout private constructor(
         return sw.toString()
     }
 
+    private fun toBinary(x: Int): String {
+        var s = Integer.toBinaryString(x)
+        val deficit = 8 - s.length
+        for (c in 0 until deficit) {
+            s = "0$s"
+        }
+        return s
+    }
+
+    private fun toHex(x: Int): String {
+        var s = Integer.toHexString(x)
+        val deficit = 2 - s.length
+        for (c in 0 until deficit) {
+            s = "0$s"
+        }
+        return s
+    }
+
     companion object {
 
         fun parseInstance(instance: Any): InstanceLayout {
@@ -115,7 +160,7 @@ class InstanceLayout private constructor(
             val fields = TreeSet(classData.fields)
 
             if (classData.isArray) {
-                val clazz = instance::class.java
+                val clazz = instance.javaClass
 
                 val instanceSize = vm.sizeOfArrayObject(instance)
 

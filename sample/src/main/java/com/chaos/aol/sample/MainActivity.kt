@@ -73,7 +73,7 @@ class MainActivity : AppCompatActivity() {
         Log.d(TAG, "primitive double array[1] size: " + Jvmti.getObjectSize(doubleArrayOf(123.0)))
         Log.d(TAG, "primitive double array[2] size: " + Jvmti.getObjectSize(doubleArrayOf(123.0, 123.0)))
 
-        Log.d(TAG, InstanceLayout.parseInstance(charArrayOf('a')).toPrintable())
+        Log.d(TAG, InstanceLayout.parseInstance(charArrayOf('a','b')).toPrintable())
         Log.d(TAG, "Char array[0] Size: " + Jvmti.getObjectSize(emptyArray<Char>()))
         Log.d(TAG, "Char array[1] Size: " + Jvmti.getObjectSize(arrayOf('a')))
         Log.d(TAG, "Char array[2] Size: " + Jvmti.getObjectSize(arrayOf('a', 'a')))
@@ -91,15 +91,15 @@ class MainActivity : AppCompatActivity() {
         Log.d(TAG, "primitive boolean array[2] Size: " + Jvmti.getObjectSize(booleanArrayOf(true, true)))
 
         Log.d(TAG, "====================")
-        Log.d(TAG, "primitive boolean array header: " + Vm.get().arrayHeaderSize(booleanArrayOf()::class.java))
-        Log.d(TAG, "primitive byte array header: " + Vm.get().arrayHeaderSize(byteArrayOf()::class.java))
-        Log.d(TAG, "primitive char array header: " + Vm.get().arrayHeaderSize(charArrayOf()::class.java))
-        Log.d(TAG, "primitive short array header: " + Vm.get().arrayHeaderSize(shortArrayOf()::class.java))
-        Log.d(TAG, "primitive int array header: " + Vm.get().arrayHeaderSize(intArrayOf()::class.java))
-        Log.d(TAG, "primitive float array header: " + Vm.get().arrayHeaderSize(floatArrayOf()::class.java))
-        Log.d(TAG, "primitive long array header: " + Vm.get().arrayHeaderSize(longArrayOf()::class.java))
-        Log.d(TAG, "primitive double array header: " + Vm.get().arrayHeaderSize(doubleArrayOf()::class.java))
-        Log.d(TAG, "String array header: " + Vm.get().arrayHeaderSize(emptyArray<String>()::class.java))
+        Log.d(TAG, "primitive boolean array header: " + Vm.get().arrayHeaderSize(booleanArrayOf().javaClass))
+        Log.d(TAG, "primitive byte array header: " + Vm.get().arrayHeaderSize(byteArrayOf().javaClass))
+        Log.d(TAG, "primitive char array header: " + Vm.get().arrayHeaderSize(charArrayOf().javaClass))
+        Log.d(TAG, "primitive short array header: " + Vm.get().arrayHeaderSize(shortArrayOf().javaClass))
+        Log.d(TAG, "primitive int array header: " + Vm.get().arrayHeaderSize(intArrayOf().javaClass))
+        Log.d(TAG, "primitive float array header: " + Vm.get().arrayHeaderSize(floatArrayOf().javaClass))
+        Log.d(TAG, "primitive long array header: " + Vm.get().arrayHeaderSize(longArrayOf().javaClass))
+        Log.d(TAG, "primitive double array header: " + Vm.get().arrayHeaderSize(doubleArrayOf().javaClass))
+        Log.d(TAG, "String array header: " + Vm.get().arrayHeaderSize(emptyArray<String>().javaClass))
     }
 
     companion object {

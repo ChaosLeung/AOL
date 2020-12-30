@@ -11,6 +11,8 @@ internal class Unsafe {
         private val arrayBaseOffsetMethod: Method
         private val arrayIndexScaleMethod: Method
 
+        private val getIntMethod: Method
+
         init {
             val unsafeClass = Class.forName("sun.misc.Unsafe")
             val instanceField = unsafeClass.getDeclaredField("THE_ONE").apply { isAccessible = true }
@@ -19,6 +21,8 @@ internal class Unsafe {
             objectFieldOffsetMethod = unsafeClass.getDeclaredMethod("objectFieldOffset", Field::class.java)
             arrayBaseOffsetMethod = unsafeClass.getDeclaredMethod("arrayBaseOffset", Class::class.java)
             arrayIndexScaleMethod = unsafeClass.getDeclaredMethod("arrayIndexScale", Class::class.java)
+
+            getIntMethod = unsafeClass.getDeclaredMethod("getInt", Object::class.java, Long::class.java)
         }
 
         fun objectFieldOffset(field: Field): Long {
@@ -31,6 +35,10 @@ internal class Unsafe {
 
         fun arrayIndexScale(clazz: Class<*>): Int {
             return arrayIndexScaleMethod.invoke(THE_ONE, clazz) as Int
+        }
+
+        fun getInt(obj: Any, offset: Long): Int {
+            return getIntMethod.invoke(THE_ONE, obj, offset) as Int
         }
     }
 }

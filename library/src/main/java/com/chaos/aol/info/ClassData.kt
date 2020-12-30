@@ -17,7 +17,7 @@ open class ClassData internal constructor(
     companion object {
 
         fun parseInstance(instance: Any): ClassData {
-            return parse(instance::class.java)
+            return parse(instance.javaClass)
         }
 
         private fun <T> parse(clazz: Class<T>): ClassData {
