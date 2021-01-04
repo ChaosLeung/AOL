@@ -4,9 +4,7 @@ import java.lang.reflect.Field
 
 interface VirtualMachine {
 
-    fun sizeOfObject(obj: Any): Long
-
-    fun sizeOfArrayObject(obj: Any): Long
+    fun sizeOfObject(obj: Any): Int
 
     fun sizeOfField(field: Field): Int
 

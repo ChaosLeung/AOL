@@ -9,8 +9,8 @@ class FieldData private constructor(
     name: String,
     val type: String,
     declaringClass: String,
-    val offset: Long,
-    val size: Long = -1
+    val offset: Int,
+    val size: Int = -1
 ) : Comparable<FieldData> {
 
     val name: String
@@ -44,12 +44,12 @@ class FieldData private constructor(
                 field.name,
                 field.type.getSafeName(),
                 field.declaringClass.getSafeName(),
-                Vm.get().fieldOffset(field),
-                Vm.get().sizeOfField(field).toLong()
+                Vm.get().fieldOffset(field).toInt(),
+                Vm.get().sizeOfField(field)
             )
         }
 
-        fun create(fieldName: String, fieldType: String, declaringClass: String, offset: Long, size: Long): FieldData {
+        fun create(fieldName: String, fieldType: String, declaringClass: String, offset: Int, size: Int): FieldData {
             return FieldData(null, fieldName, fieldType, declaringClass, offset, size)
         }
     }

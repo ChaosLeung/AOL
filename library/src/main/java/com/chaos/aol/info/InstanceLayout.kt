@@ -15,7 +15,7 @@ class InstanceLayout private constructor(
     private val instanceRef: WeakReference<Any?>,
     private val classData: ClassData,
     private val fields: List<FieldData>,
-    private val instanceSize: Long
+    private val instanceSize: Int
 ) {
 
     fun toReadableString(): String {
@@ -97,10 +97,10 @@ class InstanceLayout private constructor(
             }
         }
 
-        var nextFree = classData.headerSize.toLong()
+        var nextFree = classData.headerSize
 
-        var interLoss: Long = 0
-        var exterLoss: Long = 0
+        var interLoss = 0
+        var exterLoss = 0
 
         for (f in fields) {
             if (f.offset > nextFree) {
@@ -128,7 +128,7 @@ class InstanceLayout private constructor(
             nextFree = f.offset + f.size
         }
 
-        val sizeOf: Long = instanceSize
+        val sizeOf = instanceSize
         if (sizeOf != nextFree) {
             exterLoss = sizeOf - nextFree
             pw.printf(
@@ -141,7 +141,7 @@ class InstanceLayout private constructor(
         }
 
         pw.printf("Instance size: ")
-        if (sizeOf == VirtualMachine.UNKNOWN_SIZE.toLong()) {
+        if (sizeOf == VirtualMachine.UNKNOWN_SIZE) {
             pw.printf("<Unknown>")
         } else {
             pw.printf("%d bytes", sizeOf)
@@ -190,14 +190,14 @@ class InstanceLayout private constructor(
             if (classData.isArray) {
                 val clazz = instance.javaClass
 
-                val instanceSize = vm.sizeOfArrayObject(instance)
+                val instanceSize = vm.sizeOfObject(instance)
 
                 fields.add(
                     FieldData.create(
                         "<elements>",
                         clazz.componentType!!.getSafeName(),
                         classData.name,
-                        vm.arrayBaseOffset(clazz).toLong(),
+                        vm.arrayBaseOffset(clazz),
                         instanceSize - classData.headerSize
                     )
                 )

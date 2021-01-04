@@ -7,26 +7,52 @@ internal object Art : VirtualMachine {
 
     private val OBJECT_SIZE_FIELD =
         Class::class.java.getDeclaredField("objectSize").apply { isAccessible = true }
+    private val ACCESS_FLAGS_FIELD =
+        Class::class.java.getDeclaredField("clinitThreadId").apply { isAccessible = true }
 
-    private val HEADER_SIZE: Int = sizeOfObject(Any()).toInt()
+    /**
+     * define order:
+     * uint32_t class_size_;
+     * pid_t clinit_thread_id_;
+     * static_assert(sizeof(pid_t) == sizeof(int32_t), "java.lang.Class.clinitThreadId size check");
+     */
+    private val CLASS_SIZE_FIELD_OFFSET = Unsafe.objectFieldOffset(ACCESS_FLAGS_FIELD) - 4
 
-    override fun sizeOfObject(obj: Any): Long {
+    private val HEADER_SIZE: Int = sizeOfObject(Any())
+
+    override fun sizeOfObject(obj: Any): Int {
+        if (obj == Class::class.java) {
+            return Unsafe.getInt(obj, CLASS_SIZE_FIELD_OFFSET)
+        }
         val clazz = obj.javaClass
         if (clazz.isArray) {
             return sizeOfArrayObject(obj)
+        } else if (clazz == String::class.java) {
+            return sizeOfStringObject(obj as String)
         }
-        return OBJECT_SIZE_FIELD.getInt(clazz).toLong()
+        return OBJECT_SIZE_FIELD.getInt(clazz)
     }
 
-    override fun sizeOfArrayObject(obj: Any): Long {
+    private fun sizeOfArrayObject(obj: Any): Int {
         val clazz = obj.javaClass
         if (!clazz.isArray) {
             throw IllegalArgumentException("class '${clazz.name}' of object '$obj' should be an array class")
         }
 
         val headerSize = Unsafe.arrayBaseOffset(clazz)
-        val contentSize = Unsafe.arrayIndexScale(clazz).toLong() * ObjectUtils.arrayLength(obj)
+        val contentSize = Unsafe.arrayIndexScale(clazz) * ObjectUtils.arrayLength(obj)
         return headerSize + contentSize
+    }
+
+    private fun sizeOfStringObject(str: String): Int {
+        // https://android.googlesource.com/platform/art/+/refs/heads/android11-release/runtime/mirror/string-inl.h#88
+        val allAscii = str.all {
+            // https://android.googlesource.com/platform/art/+/refs/heads/android11-release/runtime/mirror/string.h#241
+            it.toInt() - 1 < 0x7f
+        }
+        var size = HEADER_SIZE + 8
+        size += str.length * if (allAscii) 1 else 2
+        return roundUp(size, 8)
     }
 
     override fun sizeOfField(field: Field): Int = sizeOfType(field.type)
@@ -60,29 +86,6 @@ internal object Art : VirtualMachine {
     }
 
     override fun getInt(obj: Any, offset: Long): Int = Unsafe.getInt(obj, offset)
-
-    fun guessArrayObjectSize(obj: Any): Long {
-        val clazz = obj.javaClass
-        if (!clazz.isArray) {
-            throw IllegalArgumentException("${clazz.name} should be an array class")
-        }
-
-        val arrayLength = ObjectUtils.arrayLength(obj)
-
-        val headerSize = guessArrayHeaderSize(clazz)
-        val contentSize = arrayLength.toLong() * sizeOfType(clazz.componentType!!)
-        return headerSize + contentSize
-    }
-
-    fun guessArrayHeaderSize(clazz: Class<*>): Int {
-        if (!clazz.isArray) {
-            throw IllegalArgumentException("${clazz.name} should be an array class")
-        }
-        // code from ComputeArraySize method which in art/runtime/mirror/array-alloc-inl.h
-        // code from GetRawData method which in art/runtime/mirror/array.h
-
-        return roundUp(HEADER_SIZE + 4/* int32_t length_ */, sizeOfType(clazz.componentType!!))
-    }
 
     private fun roundUp(x: Int, n: Int): Int {
         return roundDown(x + n - 1, n)

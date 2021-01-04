@@ -16,7 +16,23 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun showObjectLayout(view: View) {
+        InstanceLayout.parseInstance("123").dumpToLog()
+        InstanceLayout.parseInstance("1234").dumpToLog()
+        InstanceLayout.parseInstance("123456").dumpToLog()
+        InstanceLayout.parseInstance("12345678").dumpToLog()
+        InstanceLayout.parseInstance("1234567890").dumpToLog()
+        Log.d(TAG, "String Size: " + Jvmti.getObjectSize("123"))
+        Log.d(TAG, "String Size: " + Jvmti.getObjectSize("1234"))
+        Log.d(TAG, "String Size: " + Jvmti.getObjectSize("123456"))
+        Log.d(TAG, "String Size: " + Jvmti.getObjectSize("12345678"))
+        Log.d(TAG, "String Size: " + Jvmti.getObjectSize("1234567890"))
+
         InstanceLayout.parseInstance(Primitive()).dumpToLog()
+        Log.d(TAG, "Primitive Size: " + Jvmti.getObjectSize(Primitive()))
+
+        InstanceLayout.parseInstance(Class::class.java).dumpToLog()
+        Log.d(TAG, "Class class Size: " + Jvmti.getObjectSize(Class::class.java))
+
         InstanceLayout.parseInstance(PrimitiveArray()).dumpToLog()
         Log.d(TAG, "PrimitiveArray Size: " + Jvmti.getObjectSize(PrimitiveArray()))
         InstanceLayout.parseInstance(Boxed()).dumpToLog()
