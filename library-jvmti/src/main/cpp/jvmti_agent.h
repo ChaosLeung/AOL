@@ -9,7 +9,7 @@
 
 static jvmtiEnv *gJvmtiEnv;
 
-const char *jvmtiJavaClazz = "com/chaos/library/aol/jvmti/Jvmti";
+const char *jvmtiJavaClazz = "com/chaos/library/aol/jvmti/JvmtiImpl";
 const char *jvmtiGetObjectSizeMethod = "nativeGetObjectSize";
 const char *jvmtiGetObjectSizeMethodSignature = "(Ljava/lang/Object;)J";
 

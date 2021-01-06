@@ -44,3 +44,9 @@ class BoxedArray : Boxed() {
     private val floatArray: Array<Float>? = null
     private val doubleArray: Array<Double>? = null
 }
+
+class Foo {
+    private val obj: Any? = null
+    private val aInt: Int = 1
+    private val aLong: Long = 3L
+}

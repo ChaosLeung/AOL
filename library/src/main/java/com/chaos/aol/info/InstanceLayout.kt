@@ -2,6 +2,7 @@ package com.chaos.aol.info
 
 import android.util.Log
 import com.chaos.aol.extensions.getSafeName
+import com.chaos.aol.jvmti.JvmtiProvider
 import com.chaos.aol.utils.ObjectUtils
 import com.chaos.aol.vm.VirtualMachine
 import com.chaos.aol.vm.Vm
@@ -145,6 +146,10 @@ class InstanceLayout private constructor(
             pw.printf("<Unknown>")
         } else {
             pw.printf("%d bytes", sizeOf)
+        }
+        val jvmti = JvmtiProvider.get()
+        if (instance != null && jvmti != null) {
+            pw.printf(" (JVMTI: %d bytes)", jvmti.getObjectSize(instance))
         }
         pw.println()
         pw.printf(

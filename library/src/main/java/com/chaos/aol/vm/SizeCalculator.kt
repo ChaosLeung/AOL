@@ -40,9 +40,9 @@ internal object SizeCalculatorProvider {
 }
 
 private open class SizeCalculatorV19 : SizeCalculator {
-    private val OBJECT_SIZE_FIELD =
+    private val objectSizeField =
         Class::class.java.getDeclaredField("objectSize").apply { isAccessible = true }
-    private val ACCESS_FLAGS_FIELD =
+    private val clinitThreadIdField =
         Class::class.java.getDeclaredField("clinitThreadId").apply { isAccessible = true }
 
     /**
@@ -51,11 +51,11 @@ private open class SizeCalculatorV19 : SizeCalculator {
      * pid_t clinit_thread_id_;
      * static_assert(sizeof(pid_t) == sizeof(int32_t), "java.lang.Class.clinitThreadId size check");
      */
-    private val CLASS_SIZE_FIELD_OFFSET = Unsafe.objectFieldOffset(ACCESS_FLAGS_FIELD) - 4/* int32_t */
+    private val classSizeFieldOffset = Unsafe.objectFieldOffset(clinitThreadIdField) - 4/* int32_t */
 
-    protected val HEADER_SIZE: Int = OBJECT_SIZE_FIELD.getInt(Any::class.java)
+    protected val objectHeaderSize: Int = objectSizeField.getInt(Any::class.java)
 
-    override fun sizeOfClassObject(clazz: Class<*>): Int = Unsafe.getInt(clazz, CLASS_SIZE_FIELD_OFFSET)
+    override fun sizeOfClassObject(clazz: Class<*>): Int = Unsafe.getInt(clazz, classSizeFieldOffset)
 
     override fun sizeOfArrayObject(obj: Any): Int {
         val clazz = obj.javaClass
@@ -75,10 +75,10 @@ private open class SizeCalculatorV19 : SizeCalculator {
         // int32_t count_;
         // uint32_t hash_code_;
         // int32_t offset_;
-        return HEADER_SIZE + 16 /* String Fields */ + str.length * 2 /* unit16_t */
+        return objectHeaderSize + 16 /* String Fields */ + str.length * 2 /* unit16_t */
     }
 
-    override fun sizeOfRegularObject(obj: Any): Int = OBJECT_SIZE_FIELD.getInt(obj.javaClass)
+    override fun sizeOfRegularObject(obj: Any): Int = objectSizeField.getInt(obj.javaClass)
 
     override fun sizeOfField(field: Field): Int {
         return when (field.type) {
@@ -94,7 +94,7 @@ private open class SizeCalculatorV19 : SizeCalculator {
         }
     }
 
-    override fun objectHeaderSize(): Int = HEADER_SIZE
+    override fun objectHeaderSize(): Int = objectHeaderSize
 
     override fun arrayHeaderSize(clazz: Class<*>): Int {
         if (!clazz.isArray) {
@@ -112,7 +112,7 @@ private open class SizeCalculatorV23 : SizeCalculatorV19() {
         // int32_t count_;
         // uint32_t hash_code_;
         // uint16_t value_[0];
-        return HEADER_SIZE + 8 /* String Fields */ + str.length * 2 /* unit16_t */
+        return objectHeaderSize + 8 /* String Fields */ + str.length * 2 /* unit16_t */
     }
 }
 
@@ -142,7 +142,7 @@ private open class SizeCalculatorV26 : SizeCalculatorV24() {
             // https://android.googlesource.com/platform/art/+/refs/heads/android11-release/runtime/mirror/string.h#241
             it.toInt() - 1 < 0x7f
         }
-        var size = HEADER_SIZE + 8
+        var size = objectHeaderSize + 8
         size += str.length * if (allAscii) 1 else 2
         // https://android.googlesource.com/platform/art/+/refs/heads/android11-release/runtime/mirror/string-alloc-inl.h#174
         return MathUtils.roundUp(size, 8)

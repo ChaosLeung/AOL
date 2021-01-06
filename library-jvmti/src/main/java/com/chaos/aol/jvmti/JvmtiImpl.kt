@@ -1,25 +1,24 @@
-package com.chaos.library.aol.jvmti
+package com.chaos.aol.jvmti
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
 import android.os.Debug
 import android.util.Log
+import com.chaos.aol.vm.VirtualMachine
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 
-object Jvmti {
+object JvmtiImpl : Jvmti {
 
     private const val TAG = "Jvmti"
 
     private const val AGENT_NAME = "aol-jvmti-agent"
 
-    private const val UNKNOWN_SIZE = -1L
+    private var attached: Boolean = false
 
     private fun isJvmtiSupport(): Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-
-    private var attached: Boolean = false
 
     @SuppressLint("SoonBlockedPrivateApi")
     fun attach(context: Context) {
@@ -55,13 +54,15 @@ object Jvmti {
         }
 
         System.loadLibrary(AGENT_NAME)
+
+        JvmtiProvider.attach(this)
     }
 
-    fun getObjectSize(o: Any): Long {
+    override fun getObjectSize(o: Any): Int {
         if (!isJvmtiSupport()) {
-            return UNKNOWN_SIZE
+            return VirtualMachine.UNKNOWN_SIZE
         }
-        return nativeGetObjectSize(o)
+        return nativeGetObjectSize(o).toInt()
     }
 
     @JvmStatic

@@ -1,11 +1,11 @@
 package com.chaos.aol.sample
 
 import android.app.Application
-import com.chaos.library.aol.jvmti.Jvmti
+import com.chaos.aol.jvmti.JvmtiImpl
 
 class ExampleApplication : Application() {
     override fun onCreate() {
         super.onCreate()
-        Jvmti.attach(this)
+        JvmtiImpl.attach(this)
     }
 }
