@@ -22,6 +22,7 @@ class MainActivity : AppCompatActivity() {
         InstanceLayout.parseInstance(Primitive()).dumpToLog()
 
         InstanceLayout.parseInstance(Class::class.java).dumpToLog()
+        InstanceLayout.parseInstance(Int::class.java).dumpToLog()
 
         InstanceLayout.parseInstance(PrimitiveArray()).dumpToLog()
         InstanceLayout.parseInstance(Boxed()).dumpToLog()
@@ -47,6 +48,8 @@ class MainActivity : AppCompatActivity() {
         InstanceLayout.parseInstance(emptyArray<Boolean>()).dumpToLog()
 
         InstanceLayout.parseInstance(Foo()).dumpToLog()
+
+        InstanceLayout.parseClass(Class.forName("java.util.HashMap\$Node")).dumpToLog()
     }
 
     companion object {

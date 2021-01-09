@@ -183,20 +183,26 @@ class InstanceLayout private constructor(
 
     companion object {
 
-        private const val TAG = "InstanceLayout"
+        private const val TAG = "ClassLayout"
 
-        fun parseInstance(instance: Any): InstanceLayout {
+        fun parseInstance(instance: Any): InstanceLayout = parse(instance, instance.javaClass)
+
+        fun parseClass(clazz: Class<*>): InstanceLayout = parse(null, clazz)
+
+        private fun parse(instance: Any?, clazz: Class<*>): InstanceLayout {
             val vm = Vm.get()
 
             val ref = WeakReference(instance)
-            val classData = ClassData.parseInstance(instance)
+            val classData = ClassData.parse(clazz)
             val fields = TreeSet(classData.fields)
 
+            val instanceSize = when {
+                instance != null -> vm.sizeOfInstance(instance)
+                classData.isArray -> vm.arrayHeaderSize(clazz)
+                else -> vm.sizeOfRegularObject(clazz)
+            }
+
             if (classData.isArray) {
-                val clazz = instance.javaClass
-
-                val instanceSize = vm.sizeOfObject(instance)
-
                 fields.add(
                     FieldData.create(
                         "<elements>",
@@ -206,10 +212,8 @@ class InstanceLayout private constructor(
                         instanceSize - classData.headerSize
                     )
                 )
-                return InstanceLayout(ref, classData, fields.toList(), instanceSize)
             }
-
-            return InstanceLayout(ref, classData, fields.toList(), vm.sizeOfObject(instance))
+            return InstanceLayout(ref, classData, fields.toList(), instanceSize)
         }
     }
 }

@@ -6,7 +6,7 @@ internal object Art : VirtualMachine {
 
     private val sizeCalculator = SizeCalculatorProvider.get()
 
-    override fun sizeOfObject(obj: Any): Int {
+    override fun sizeOfInstance(obj: Any): Int {
         if (obj == Class::class.java) {
             return sizeCalculator.sizeOfClassObject(obj as Class<*>)
         }
@@ -19,7 +19,9 @@ internal object Art : VirtualMachine {
         return sizeCalculator.sizeOfRegularObject(obj)
     }
 
-    override fun sizeOfField(field: Field): Int = sizeCalculator.sizeOfField(field)
+    override fun sizeOfRegularObject(objClazz: Class<*>): Int = sizeCalculator.sizeOfRegularObject(objClazz)
+
+    override fun sizeOfField(clazz: Class<*>): Int = sizeCalculator.sizeOfField(clazz)
 
     override fun fieldOffset(field: Field): Long = Unsafe.objectFieldOffset(field)
 

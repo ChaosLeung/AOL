@@ -4,7 +4,7 @@ import com.chaos.aol.extensions.getSafeName
 import com.chaos.aol.vm.Vm
 import java.lang.reflect.Field
 
-class FieldData private constructor(
+internal class FieldData private constructor(
     val ref: Field?,
     name: String,
     val type: String,
@@ -45,7 +45,7 @@ class FieldData private constructor(
                 field.type.getSafeName(),
                 field.declaringClass.getSafeName(),
                 Vm.get().fieldOffset(field).toInt(),
-                Vm.get().sizeOfField(field)
+                Vm.get().sizeOfField(field.type)
             )
         }
 

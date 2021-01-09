@@ -3,7 +3,7 @@ package com.chaos.aol.info
 import com.chaos.aol.vm.Vm
 import java.lang.reflect.Modifier
 
-class ClassData internal constructor(
+internal class ClassData internal constructor(
     val name: String,
     fields: List<FieldData> = emptyList(),
     val headerSize: Int = Vm.get().objectHeaderSize(),
@@ -16,11 +16,7 @@ class ClassData internal constructor(
 
     companion object {
 
-        fun parseInstance(instance: Any): ClassData {
-            return parse(instance.javaClass)
-        }
-
-        private fun <T> parse(clazz: Class<T>): ClassData {
+        fun <T> parse(clazz: Class<T>): ClassData {
             val vm = Vm.get()
 
             val isArray = clazz.isArray

@@ -4,15 +4,15 @@ import android.annotation.TargetApi
 import android.os.Build
 import com.chaos.aol.utils.MathUtils
 import com.chaos.aol.utils.ObjectUtils
-import java.lang.reflect.Field
 
 internal interface SizeCalculator {
     fun sizeOfClassObject(clazz: Class<*>): Int
     fun sizeOfArrayObject(obj: Any): Int
     fun sizeOfStringObject(str: String): Int
     fun sizeOfRegularObject(obj: Any): Int
+    fun sizeOfRegularObject(objClazz: Class<*>): Int
 
-    fun sizeOfField(field: Field): Int
+    fun sizeOfField(fieldType: Class<*>): Int
 
     fun objectHeaderSize(): Int
     fun arrayHeaderSize(clazz: Class<*>): Int
@@ -78,10 +78,12 @@ private open class SizeCalculatorV19 : SizeCalculator {
         return objectHeaderSize + 16 /* String Fields */ + str.length * 2 /* unit16_t */
     }
 
-    override fun sizeOfRegularObject(obj: Any): Int = objectSizeField.getInt(obj.javaClass)
+    override fun sizeOfRegularObject(obj: Any): Int = sizeOfRegularObject(obj.javaClass)
 
-    override fun sizeOfField(field: Field): Int {
-        return when (field.type) {
+    override fun sizeOfRegularObject(objClazz: Class<*>): Int = objectSizeField.getInt(objClazz)
+
+    override fun sizeOfField(fieldType: Class<*>): Int {
+        return when (fieldType) {
             Void::class.javaPrimitiveType -> 0
             Byte::class.javaPrimitiveType, Boolean::class.javaPrimitiveType -> 1
             Char::class.javaPrimitiveType, Short::class.javaPrimitiveType -> 2
