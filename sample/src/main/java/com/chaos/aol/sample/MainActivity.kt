@@ -1,9 +1,13 @@
 package com.chaos.aol.sample
 
 import android.os.Bundle
+import android.os.Handler
+import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import com.chaos.aol.external.ArtObjectLayout
 import com.chaos.aol.info.InstanceLayout
+import java.util.HashMap
 
 class MainActivity : AppCompatActivity() {
 
@@ -42,14 +46,20 @@ class MainActivity : AppCompatActivity() {
         InstanceLayout.parseInstance(doubleArrayOf()).dumpToLog()
         InstanceLayout.parseInstance(emptyArray<Double>()).dumpToLog()
 
-        InstanceLayout.parseInstance(charArrayOf('a','b')).dumpToLog()
+        InstanceLayout.parseInstance(charArrayOf('a', 'b')).dumpToLog()
 
         InstanceLayout.parseInstance(booleanArrayOf()).dumpToLog()
         InstanceLayout.parseInstance(emptyArray<Boolean>()).dumpToLog()
 
         InstanceLayout.parseInstance(Foo()).dumpToLog()
 
-        InstanceLayout.parseClass(Class.forName("java.util.HashMap\$Node")).dumpToLog()
+        InstanceLayout.parseClass(Class.forName("java.util.HashMap")).dumpToLog()
+        InstanceLayout.parseClass(Class.forName("java.lang.reflect.Method")).dumpToLog()
+
+        ArtObjectLayout.dumpObjectLayout(Class.forName("java.util.HashMap"))
+        ArtObjectLayout.dumpClassLayout(Class.forName("java.util.HashMap"))
+        ArtObjectLayout.getFields(Class.forName("java.util.HashMap"), true)
+        ArtObjectLayout.getFields(Class.forName("java.util.HashMap"), false)
     }
 
     companion object {

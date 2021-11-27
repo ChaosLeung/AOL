@@ -8,12 +8,16 @@ android {
 
     defaultConfig {
         applicationId "com.chaos.aol.sample"
-        minSdkVersion 19
+        minSdkVersion 21
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        ndk {
+            abiFilters "armeabi-v7a", "x86"
+        }
     }
 
     buildTypes {
@@ -35,4 +39,5 @@ dependencies {
 
     implementation project(':library')
     implementation project(':library-jvmti')
+    implementation project(':library-art')
 }

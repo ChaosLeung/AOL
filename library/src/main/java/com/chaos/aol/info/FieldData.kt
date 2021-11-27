@@ -4,7 +4,7 @@ import com.chaos.aol.extensions.getSafeName
 import com.chaos.aol.vm.Vm
 import java.lang.reflect.Field
 
-internal class FieldData private constructor(
+class FieldData private constructor(
     val ref: Field?,
     name: String,
     val type: String,
@@ -49,6 +49,7 @@ internal class FieldData private constructor(
             )
         }
 
+        @JvmStatic
         fun create(fieldName: String, fieldType: String, declaringClass: String, offset: Int, size: Int): FieldData {
             return FieldData(null, fieldName, fieldType, declaringClass, offset, size)
         }
