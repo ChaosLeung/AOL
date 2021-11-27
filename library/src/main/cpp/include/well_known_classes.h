@@ -7,13 +7,15 @@ namespace aol {
 
 struct WellKnownClasses {
 public:
-    static void Init(JNIEnv* env);
+    static void Init(JNIEnv *env);
 
     static jclass java_lang_Class;
     static jmethodID java_lang_Class_getName;
-    static jmethodID java_lang_Class_getSuperClass;
     static jfieldID java_lang_Class_sFields;
     static jfieldID java_lang_Class_iFields;
+    static jfieldID java_lang_Class_numStaticFields;    // Android 23
+    static jfieldID java_lang_Class_numInstanceFields;  // Android 23
+    static jfieldID java_lang_Class_classSize;
 
     // Android 21 & 22
     static jclass java_lang_reflect_ArtField;
@@ -23,10 +25,6 @@ public:
 
     static jclass libcore_reflect_InternalNames;
     static jmethodID libcore_reflect_InternalNames_getInternalName;
-
-    // Android 23
-    static jfieldID java_lang_Class_numStaticFields;
-    static jfieldID java_lang_Class_numInstanceFields;
 
     static jclass java_util_ArrayList;
     static jmethodID java_util_ArrayList_init;

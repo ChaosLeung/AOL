@@ -1,5 +1,3 @@
-include ':library-art'
-include ':library-jvmti'
 include ':library'
 include ':sample'
 

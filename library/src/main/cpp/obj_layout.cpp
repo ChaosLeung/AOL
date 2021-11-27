@@ -61,23 +61,7 @@ void GetClassFields(JNIEnv *env, jclass target, vector<JField> *out_fields) {
 
 extern "C" {
 
-void DumpObjectLayout(JNIEnv *env, jclass clazz, jclass target) {
-    vector<JField> fields;
-    GetObjectFields(env, target, &fields);
-    for (auto &i : fields) {
-        LOGD("name: %s type: %s class: %s offset: %d size: %d", i.name.c_str(), i.type.c_str(), i.declaringClass.c_str(), i.offset, i.size);
-    }
-}
-
-void DumpClassLayout(JNIEnv *env, jclass clazz, jclass target) {
-    vector<JField> fields;
-    GetClassFields(env, target, &fields);
-    for (auto &i : fields) {
-        LOGD("name: %s type: %s class: %s offset: %d size: %d", i.name.c_str(), i.type.c_str(), i.declaringClass.c_str(), i.offset, i.size);
-    }
-}
-
-jobject GetFields(JNIEnv *env, jclass clazz, jclass target, jboolean is_static) {
+jobject NativeGetFields(JNIEnv *env, jclass clazz, jclass target, jboolean is_static) {
     vector<JField> fields;
 
     if (is_static) {
@@ -96,6 +80,10 @@ void NativeInit(JNIEnv *env, jclass clazz) {
     WellKnownClasses::Init(env);
 }
 
+jint NativeGetClassSize(JNIEnv *env, jclass clazz, jclass target) {
+    return env->GetIntField(target, WellKnownClasses::java_lang_Class_classSize);
+}
+
 }
 
 static JNINativeMethod methods[] = {
@@ -105,24 +93,19 @@ static JNINativeMethod methods[] = {
         reinterpret_cast<void *>(NativeInit)
     },
     {
-        "dumpObjectLayout",
-        "(Ljava/lang/Class;)V",
-        reinterpret_cast<void *>(DumpObjectLayout)
-    },
-    {
-        "dumpClassLayout",
-        "(Ljava/lang/Class;)V",
-        reinterpret_cast<void *>(DumpClassLayout)
-    },
-    {
-        "getFields",
+        "nativeGetFields",
         "(Ljava/lang/Class;Z)Ljava/util/List;",
-        reinterpret_cast<void *>(GetFields)
+        reinterpret_cast<void *>(NativeGetFields)
+    },
+    {
+        "getClassSize",
+        "(Ljava/lang/Class;)I",
+        reinterpret_cast<void *>(NativeGetClassSize)
     }
 };
 
 inline jint RegisterNatives(JNIEnv *env) {
-    jclass clz = env->FindClass("com/chaos/aol/external/ArtObjectLayout");
+    jclass clz = env->FindClass("com/chaos/aol/external/ArtNative");
     if (clz != nullptr) {
         return env->RegisterNatives(clz, methods, ARRAY_SIZE(methods));
     }

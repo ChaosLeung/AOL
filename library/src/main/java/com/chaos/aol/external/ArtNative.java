@@ -8,7 +8,7 @@ import java.util.List;
 
 import me.weishu.reflection.Reflection;
 
-public class ArtObjectLayout {
+public class ArtNative {
 
     static {
         System.loadLibrary("aol-art");
@@ -21,9 +21,7 @@ public class ArtObjectLayout {
 
     public static native void nativeInit();
 
-    public static native void dumpObjectLayout(Class<?> clz);
+    public static native List<FieldData> nativeGetFields(Class<?> clz, boolean isStatic);
 
-    public static native void dumpClassLayout(Class<?> clz);
-
-    public static native List<FieldData> getFields(Class<?> clz, boolean isStatic);
+    public static native int getClassSize(Class<?> clz);
 }

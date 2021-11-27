@@ -2,6 +2,7 @@ package com.chaos.aol.vm
 
 import android.annotation.TargetApi
 import android.os.Build
+import com.chaos.aol.external.ArtNative
 import com.chaos.aol.utils.MathUtils
 import com.chaos.aol.utils.ObjectUtils
 
@@ -55,7 +56,7 @@ private open class SizeCalculatorV19 : SizeCalculator {
 
     protected val objectHeaderSize: Int = objectSizeField.getInt(Any::class.java)
 
-    override fun sizeOfClassObject(clazz: Class<*>): Int = Unsafe.getInt(clazz, classSizeFieldOffset)
+    override fun sizeOfClassObject(clazz: Class<*>): Int = ArtNative.getClassSize(clazz)
 
     override fun sizeOfArrayObject(obj: Any): Int {
         val clazz = obj.javaClass

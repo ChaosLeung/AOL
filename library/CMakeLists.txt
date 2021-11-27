@@ -9,8 +9,7 @@ set(PROTECTION_SOURCES ${SOURCE_FILES})
 
 add_library(aol-art
         SHARED
-        ${PROTECTION_SOURCES}
-        src/main/cpp/well_known_classes.cpp)
+        ${PROTECTION_SOURCES})
 
 find_library(android-log log)
 

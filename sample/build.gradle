@@ -38,6 +38,4 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 
     implementation project(':library')
-    implementation project(':library-jvmti')
-    implementation project(':library-art')
 }
