@@ -30,8 +30,8 @@ public:
     static jmethodID java_util_ArrayList_init;
     static jmethodID java_util_ArrayList_add;
 
-    static jclass com_chaos_aol_FieldData;
-    static jmethodID com_chaos_aol_FieldData_create;
+    static jclass com_chaos_aol_JField;
+    static jmethodID com_chaos_aol_JField_create;
 };
 
 }

@@ -1,33 +1,28 @@
 package com.chaos.aol.info
 
 import android.util.Log
-import com.chaos.aol.extensions.getSafeName
 import com.chaos.aol.vm.VirtualMachine
-import com.chaos.aol.vm.Vm
 import java.io.PrintWriter
 import java.io.StringWriter
-import java.util.*
 import kotlin.math.max
 
-class InstanceLayout private constructor(
-    private val classData: ClassData,
-    private val fields: List<FieldData>,
-    private val instanceSize: Int
+class ObjectLayout private constructor(
+    private val klass: JClass,
 ) {
 
-    fun toReadableString(): String {
+    fun toReadableString(isClassInfo: Boolean = false): String {
         val sw = StringWriter()
         val pw = PrintWriter(sw)
 
-        dump(pw)
+        dump(pw, isClassInfo)
 
         pw.close()
 
         return sw.toString()
     }
 
-    fun dumpToLog(priority: Int = Log.DEBUG, tag: String = TAG) {
-        toReadableString().split('\n').forEach {
+    fun dumpToLog(priority: Int = Log.DEBUG, tag: String = TAG, classInfo: Boolean = false) {
+        toReadableString(classInfo).split('\n').forEach {
             when (priority) {
                 Log.VERBOSE -> Log.v(tag, it)
                 Log.DEBUG -> Log.d(tag, it)
@@ -39,37 +34,37 @@ class InstanceLayout private constructor(
         }
     }
 
-    fun dump(pw: PrintWriter) {
+    fun dump(pw: PrintWriter, isClassInfo: Boolean = false) {
         val paddingDesc = "(alignment/padding gap)"
         val nextGapDesc = "(loss due to the next object alignment)"
-        val objHeaderDesc = "(object header)"
 
         var maxTypeLen = "TYPE".length
+        var maxClassLen = "DECLARING_CLASS".length
+        val fields = if (isClassInfo) klass.staticFields else klass.instanceFields
         for (f in fields) {
             maxTypeLen = max(f.type.length, maxTypeLen)
+            maxClassLen = max(f.declaringClass.length, maxClassLen)
         }
         maxTypeLen += 2
+        maxClassLen += 2
 
-        pw.println("${classData.name} object internals:")
+        if (isClassInfo) {
+            pw.println("${klass.name} class internals:")
+        } else {
+            pw.println("${klass.name} object internals:")
+        }
         pw.printf(
-            " %6s %5s %${maxTypeLen}s  %s%n",
+            " %6s %5s %${maxClassLen}s %${maxTypeLen}s  %s%n",
             "OFFSET",
             "SIZE",
+            "DECLARING_CLASS",
             "TYPE",
             "DESCRIPTION"
         )
 
-        val commonFormat = " %6d %5d %${maxTypeLen}s  %s%n"
+        val commonFormat = " %6d %5d %${maxClassLen}s %${maxTypeLen}s  %s%n"
 
-        pw.printf(
-            commonFormat,
-            0,
-            classData.headerSize,
-            "",
-            objHeaderDesc,
-        )
-
-        var nextFree = classData.headerSize
+        var nextFree = klass.headerSize
 
         var interLoss = 0
         var exterLoss = 0
@@ -81,6 +76,7 @@ class InstanceLayout private constructor(
                     nextFree,
                     f.offset - nextFree,
                     "",
+                    "",
                     paddingDesc,
                 )
                 interLoss += f.offset - nextFree
@@ -89,25 +85,31 @@ class InstanceLayout private constructor(
                 commonFormat,
                 f.offset,
                 f.size,
+                f.declaringClass,
                 f.type,
                 f.name,
             )
             nextFree = f.offset + f.size
         }
 
-        val sizeOf = instanceSize
+        val sizeOf = if (isClassInfo) klass.classSize else klass.objectSize
         if (sizeOf != nextFree) {
             exterLoss = sizeOf - nextFree
             pw.printf(
-                " %6d %5s %${maxTypeLen}s  %s%n",
+                " %6d %5s %${maxClassLen}s %${maxTypeLen}s  %s%n",
                 nextFree,
                 exterLoss,
+                "",
                 "",
                 nextGapDesc
             )
         }
 
-        pw.printf("Instance size: ")
+        if (isClassInfo) {
+            pw.printf("Class size: ")
+        } else {
+            pw.printf("Instance size: ")
+        }
         if (sizeOf == VirtualMachine.UNKNOWN_SIZE) {
             pw.printf("<Unknown>")
         } else {
@@ -126,34 +128,16 @@ class InstanceLayout private constructor(
 
         private const val TAG = "InstanceLayout"
 
-        fun parseInstance(instance: Any): InstanceLayout = parse(instance, instance.javaClass)
-
-        fun parseClass(clazz: Class<*>): InstanceLayout = parse(null, clazz)
-
-        private fun parse(instance: Any?, clazz: Class<*>): InstanceLayout {
-            val vm = Vm.get()
-
-            val classData = ClassData.parse(clazz)
-            val fields = TreeSet(classData.fields)
-
-            val instanceSize = when {
-                instance != null -> vm.sizeOfInstance(instance)
-                classData.isArray -> vm.arrayHeaderSize(clazz)
-                else -> vm.sizeOfRegularObject(clazz)
+        fun parse(obj: Any): ObjectLayout {
+            return if (obj is Class<*>) {
+                parse(null, obj)
+            } else {
+                parse(obj, obj.javaClass)
             }
+        }
 
-            if (classData.isArray) {
-                fields.add(
-                    FieldData.create(
-                        "<elements>",
-                        clazz.componentType!!.getSafeName(),
-                        classData.name,
-                        vm.arrayBaseOffset(clazz),
-                        instanceSize - classData.headerSize
-                    )
-                )
-            }
-            return InstanceLayout(classData, fields.toList(), instanceSize)
+        private fun parse(instance: Any?, clazz: Class<*>): ObjectLayout {
+            return ObjectLayout(JClass.parse(instance, clazz))
         }
     }
 }

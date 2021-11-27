@@ -23,8 +23,8 @@ jclass WellKnownClasses::java_util_ArrayList;
 jmethodID WellKnownClasses::java_util_ArrayList_init;
 jmethodID WellKnownClasses::java_util_ArrayList_add;
 
-jclass WellKnownClasses::com_chaos_aol_FieldData;
-jmethodID WellKnownClasses::com_chaos_aol_FieldData_create;
+jclass WellKnownClasses::com_chaos_aol_JField;
+jmethodID WellKnownClasses::com_chaos_aol_JField_create;
 
 void WellKnownClasses::Init(JNIEnv *env) {
     java_lang_Class = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("java/lang/Class")));
@@ -57,9 +57,9 @@ void WellKnownClasses::Init(JNIEnv *env) {
     java_util_ArrayList_init = env->GetMethodID(java_util_ArrayList, "<init>", "()V");
     java_util_ArrayList_add = env->GetMethodID(java_util_ArrayList, "add", "(Ljava/lang/Object;)Z");
 
-    com_chaos_aol_FieldData = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("com/chaos/aol/info/FieldData")));
-    com_chaos_aol_FieldData_create = env->GetStaticMethodID(com_chaos_aol_FieldData, "create",
-                                                            "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;II)Lcom/chaos/aol/info/FieldData;");
+    com_chaos_aol_JField = reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("com/chaos/aol/info/JField")));
+    com_chaos_aol_JField_create = env->GetStaticMethodID(com_chaos_aol_JField, "create",
+                                                            "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;II)Lcom/chaos/aol/info/JField;");
 }
 
 }

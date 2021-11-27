@@ -26,8 +26,8 @@ jobject GetFieldsList(JNIEnv *env, vector<JField> *fields) {
         jstring name = env->NewStringUTF(f.name.c_str());
         jstring type = env->NewStringUTF(GetClassName(f.type).c_str());
         jstring declaring_class = env->NewStringUTF(f.declaringClass.c_str());
-        jobject obj = env->CallStaticObjectMethod(WellKnownClasses::com_chaos_aol_FieldData,
-                                                  WellKnownClasses::com_chaos_aol_FieldData_create,
+        jobject obj = env->CallStaticObjectMethod(WellKnownClasses::com_chaos_aol_JField,
+                                                  WellKnownClasses::com_chaos_aol_JField_create,
                                                   name,
                                                   type,
                                                   declaring_class,

@@ -43,16 +43,6 @@ internal object SizeCalculatorProvider {
 private open class SizeCalculatorV19 : SizeCalculator {
     private val objectSizeField =
         Class::class.java.getDeclaredField("objectSize").apply { isAccessible = true }
-    private val clinitThreadIdField =
-        Class::class.java.getDeclaredField("clinitThreadId").apply { isAccessible = true }
-
-    /**
-     * define order:
-     * uint32_t class_size_;
-     * pid_t clinit_thread_id_;
-     * static_assert(sizeof(pid_t) == sizeof(int32_t), "java.lang.Class.clinitThreadId size check");
-     */
-    private val classSizeFieldOffset = Unsafe.objectFieldOffset(clinitThreadIdField) - 4/* int32_t */
 
     protected val objectHeaderSize: Int = objectSizeField.getInt(Any::class.java)
 
@@ -81,7 +71,9 @@ private open class SizeCalculatorV19 : SizeCalculator {
 
     override fun sizeOfRegularObject(obj: Any): Int = sizeOfRegularObject(obj.javaClass)
 
-    override fun sizeOfRegularObject(objClazz: Class<*>): Int = objectSizeField.getInt(objClazz)
+    override fun sizeOfRegularObject(objClazz: Class<*>): Int {
+        return objectSizeField.getInt(objClazz)
+    }
 
     override fun sizeOfField(fieldType: Class<*>): Int {
         return when (fieldType) {
