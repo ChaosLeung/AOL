@@ -117,7 +117,7 @@ class ObjectLayout private constructor(
         }
         pw.println()
         pw.printf(
-            "Space losses: %d bytes internal + %d bytes external = %d bytes total%n",
+            "Space losses: %d bytes internal + %d bytes external = %d bytes total",
             interLoss,
             exterLoss,
             interLoss + exterLoss

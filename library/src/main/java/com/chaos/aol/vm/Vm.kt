@@ -6,7 +6,7 @@ import com.chaos.aol.external.ArtNative
 object Vm {
     private val INSTANCE: VirtualMachine by lazy { Art }
 
-    fun init(context: Context) {
+    fun init(context: Context?) {
         ArtNative.init(context)
     }
 
