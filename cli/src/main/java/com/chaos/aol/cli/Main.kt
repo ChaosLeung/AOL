@@ -1,3 +1,5 @@
+@file:JvmName("Main")
+
 package com.chaos.aol.cli
 
 import com.chaos.aol.cli.ops.ClassOp
