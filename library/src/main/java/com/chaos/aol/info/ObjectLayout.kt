@@ -59,7 +59,7 @@ class ObjectLayout private constructor(
             "SIZE",
             "DECLARING_CLASS",
             "TYPE",
-            "DESCRIPTION"
+            "FIELD"
         )
 
         val commonFormat = " %6d %5d %${maxClassLen}s %${maxTypeLen}s  %s%n"
