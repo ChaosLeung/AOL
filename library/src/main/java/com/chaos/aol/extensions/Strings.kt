@@ -11,3 +11,12 @@ fun String.insert(start: Int = 0, step: Int = 1, ch: Char = ' '): String {
     }
     return sb.toString()
 }
+
+fun String.shortClassName(): String {
+    val idx = lastIndexOf(".")
+    return if (idx != -1) {
+        substring(idx + 1)
+    } else {
+        this
+    }
+}

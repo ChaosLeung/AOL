@@ -42,8 +42,8 @@ class ObjectLayout private constructor(
         var maxClassLen = "DECLARING_CLASS".length
         val fields = if (isClassInfo) klass.staticFields else klass.instanceFields
         for (f in fields) {
-            maxTypeLen = max(f.type.length, maxTypeLen)
-            maxClassLen = max(f.declaringClass.length, maxClassLen)
+            maxTypeLen = max(f.shortType.length, maxTypeLen)
+            maxClassLen = max(f.shortDeclaringClass.length, maxClassLen)
         }
         maxTypeLen += 2
         maxClassLen += 2
@@ -85,8 +85,8 @@ class ObjectLayout private constructor(
                 commonFormat,
                 f.offset,
                 f.size,
-                f.declaringClass,
-                f.type,
+                f.shortDeclaringClass,
+                f.shortType,
                 f.name,
             )
             nextFree = f.offset + f.size

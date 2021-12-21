@@ -1,6 +1,7 @@
 package com.chaos.aol.info
 
 import com.chaos.aol.extensions.getSafeName
+import com.chaos.aol.extensions.shortClassName
 import com.chaos.aol.vm.Vm
 import java.lang.reflect.Field
 
@@ -12,14 +13,8 @@ class JField private constructor(
     val size: Int = -1
 ) : Comparable<JField> {
 
-    fun getShortDeclaringClass(): String {
-        val idx = declaringClass.lastIndexOf(".")
-        return if (idx != -1) {
-            declaringClass.substring(idx + 1)
-        } else {
-            declaringClass
-        }
-    }
+    val shortDeclaringClass = declaringClass.shortClassName()
+    val shortType = type.shortClassName()
 
     override fun compareTo(other: JField): Int {
         return offset.compareTo(other.offset)

@@ -60,12 +60,12 @@ dump() {
   $cmd shell app_process -Djava.class.path=$target_aol -Djava.library.path=$target_dir / com.chaos.aol.cli.Main $1 $2
 }
 
-if [ -n $aol_apk ]; then
+if [ -n "$aol_apk" ]; then
     install $aol_apk
 fi
 
 if [ -z "$option" ]; then
-  if [ -z $aol_apk ]; then
+  if [ -z "$aol_apk" ]; then
     exit 1
   else
     exit 0
