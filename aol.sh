@@ -4,7 +4,7 @@ set -e
 usage() {
  cat <<-USAGE
 Usage:
-    -i install aol to device
+    -i install aol cli to device
     -s device serial
     -o option of aol, one of [class, instance]
     -c class name
@@ -12,15 +12,14 @@ Usage:
 USAGE
 }
 
-run_install=0
+aol_apk=
 device=
 option=
 class=
 
-while getopts is:o:c:h arg
-do
+while getopts i:s:o:c:h arg; do
   case $arg in
-    i) run_install=1 ;;
+    i) aol_apk=$OPTARG ;;
     s) device=$OPTARG ;;
     o) option=$OPTARG ;;
     c) class=$OPTARG ;;
@@ -39,7 +38,7 @@ else
 fi
 
 abi=$($cmd shell getprop ro.product.cpu.abi)
-if [[ $abi = x86* ]]; then
+if [[ $abi == x86* ]]; then
   abi="x86"
 fi
 
@@ -48,10 +47,9 @@ so="libaol-art.so"
 target_so="$target_dir/$so"
 target_aol="$target_dir/aol"
 
-install_aol() {
-  bash $dir/gradlew -q :cli:assembleRelease
+install() {
   temp="cli-temp"
-  unzip -q $dir/cli/build/outputs/apk/release/cli-release-unsigned.apk -d $temp
+  unzip -q $1 -d $temp
   echo "$temp/lib/$abi/$so"
   $cmd push $temp/lib/$abi/$so $target_so
   $cmd push $temp/classes.dex $target_aol
@@ -62,12 +60,16 @@ dump() {
   $cmd shell app_process -Djava.class.path=$target_aol -Djava.library.path=$target_dir / com.chaos.aol.cli.Main $1 $2
 }
 
-if [ $run_install -eq 1 ]; then
-    install_aol
+if [ -n $aol_apk ]; then
+    install $aol_apk
 fi
 
 if [ -z "$option" ]; then
-  exit 1
+  if [ -z $aol_apk ]; then
+    exit 1
+  else
+    exit 0
+  fi
 else
   dump $option $class
 fi

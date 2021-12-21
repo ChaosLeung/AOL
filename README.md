@@ -4,6 +4,34 @@ AOL is a tool for analyze object layout in ART.
 
 ## Usage
 
+### Command Line
+
+#### 1. Install aol cli to device
+
+``` shell
+./aol.sh -i cli.apk
+```
+
+#### 2. Run
+
+``` shell
+# Instance layout (instance fields)
+./aol.sh -o instance -c java.util.HashMap
+# Class layout (static fields)
+./aol.sh -o class -c java.util.HashMap
+```
+
+#### Command Line Usage
+
+```
+Usage:
+    -i install aol cli to device
+    -s device serial
+    -o option of aol, one of [class, instance]
+    -c class name
+    -h help
+```
+
 ### Kotlin
 
 Show the layout:
@@ -14,19 +42,6 @@ layout.dumpToLog(classInfo = false) // Show instance layout (instance fields)
 layout.dumpToLog(classInfo = true) // Show class layout (static fields)
 ```
 
-### Command Line
-
-``` shell
-# Usage:
-#     -i install aol to device
-#     -s device serial
-#     -o option of aol, one of [class, instance]
-#     -c class name
-#     -h help
-
-aol.sh -i -o instance -c java.util.HashMap
-aol.sh -o class -c java.util.HashMap
-```
 
 ## Output
 
@@ -50,7 +65,6 @@ java.util.HashMap object internals:
      40     4       java.util.HashMap                                int  size
      44     4       java.util.HashMap                                int  threshold
 Instance size: 48 bytes
-Space losses: 0 bytes internal + 0 bytes external = 0 bytes total
 ```
 
 ### Class Layout

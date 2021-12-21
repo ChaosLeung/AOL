@@ -115,13 +115,16 @@ class ObjectLayout private constructor(
         } else {
             pw.printf("%d bytes", sizeOf)
         }
-        pw.println()
-        pw.printf(
-            "Space losses: %d bytes internal + %d bytes external = %d bytes total",
-            interLoss,
-            exterLoss,
-            interLoss + exterLoss
-        )
+
+        if (interLoss != 0 || exterLoss != 0) {
+            pw.println()
+            pw.printf(
+                "Space losses: %d bytes internal + %d bytes external = %d bytes total",
+                interLoss,
+                exterLoss,
+                interLoss + exterLoss
+            )
+        }
     }
 
     companion object {
